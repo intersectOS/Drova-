@@ -133,11 +133,20 @@ body::after{
   opacity:0;animation:preIn 1.2s var(--ease) 1.5s forwards}
 
 /* flight captions */
-#intro-cap{position:absolute;left:0;right:0;bottom:12%;z-index:6;text-align:center;pointer-events:none}
+/* dark veil at bottom so captions stay legible over bright satellite */
+#intro-veil{position:absolute;inset:0;z-index:4;pointer-events:none;opacity:0;
+  transition:opacity 1.4s ease;
+  background:linear-gradient(to top,rgba(2,4,10,.92) 0%,rgba(2,4,10,.55) 22%,transparent 46%),
+             radial-gradient(120% 60% at 50% 100%,rgba(2,4,10,.6),transparent 70%)}
+#intro-veil.show{opacity:1}
+#intro-cap{position:absolute;left:0;right:0;bottom:11%;z-index:6;text-align:center;pointer-events:none}
 #intro-cap .cap{position:absolute;left:50%;transform:translate(-50%,20px);
-  width:max-content;max-width:90vw;opacity:0;transition:opacity .9s var(--ease),transform .9s var(--ease);
-  font-family:var(--f-disp);font-weight:300;font-size:clamp(1rem,3vw,1.5rem);
-  letter-spacing:.2em;color:var(--sand);text-shadow:0 2px 30px rgba(0,0,0,.8)}
+  width:max-content;max-width:88vw;opacity:0;transition:opacity .9s var(--ease),transform .9s var(--ease);
+  font-family:var(--f-disp);font-weight:500;font-size:clamp(1.05rem,3.2vw,1.6rem);
+  letter-spacing:.14em;color:#fff;padding:.7rem 1.6rem;border-radius:100px;
+  background:rgba(2,4,10,.5);backdrop-filter:blur(6px);
+  border:1px solid rgba(201,162,103,.25);
+  text-shadow:0 2px 18px rgba(0,0,0,.95),0 0 40px rgba(0,0,0,.6)}
 #intro-cap .cap.show{opacity:1;transform:translate(-50%,0)}
 
 /* skip */
@@ -152,6 +161,11 @@ body::after{
   align-items:center;justify-content:center;text-align:center;
   opacity:0;visibility:hidden;pointer-events:none}
 #burst.fire{opacity:1;visibility:visible}
+/* darkening backdrop that fades in behind the name */
+.burst-bg{position:absolute;inset:0;opacity:0;
+  background:radial-gradient(90% 70% at 50% 50%,rgba(2,4,10,.82),rgba(2,4,10,.96))}
+#burst.fire .burst-bg{animation:burstBg 1.4s var(--ease) .25s forwards}
+@keyframes burstBg{to{opacity:1}}
 /* shockwave rings */
 .ring{position:absolute;top:50%;left:50%;border-radius:50%;
   border:1px solid var(--gold);transform:translate(-50%,-50%) scale(0);opacity:0}
@@ -174,15 +188,16 @@ body::after{
 /* the name */
 .burst-mark{font-family:var(--f-mark);font-weight:500;color:var(--clay);direction:rtl;
   font-size:clamp(3.6rem,15vw,10rem);line-height:.9;letter-spacing:.02em;position:relative;z-index:2;
-  opacity:0;transform:scale(.6);filter:blur(14px)}
+  opacity:0;transform:scale(.6);filter:blur(14px);
+  text-shadow:0 4px 40px rgba(0,0,0,.9),0 0 80px rgba(2,4,10,.8)}
 .burst-mark .dot{color:var(--sand)}
 #burst.fire .burst-mark{animation:markIn 1.3s var(--ease) .35s forwards}
 @keyframes markIn{to{opacity:1;transform:scale(1);filter:blur(0)}}
 .burst-line{position:relative;z-index:2;margin-top:1.4rem;
-  font-family:var(--f-disp);font-weight:300;font-size:clamp(1rem,3.2vw,1.7rem);
-  letter-spacing:.14em;color:var(--sand);opacity:0;transform:translateY(20px);
-  text-shadow:0 2px 30px rgba(0,0,0,.6)}
-.burst-line b{color:var(--gold);font-weight:500}
+  font-family:var(--f-disp);font-weight:500;font-size:clamp(1.05rem,3.4vw,1.7rem);
+  letter-spacing:.14em;color:#fff;opacity:0;transform:translateY(20px);
+  text-shadow:0 2px 24px rgba(0,0,0,.95),0 0 50px rgba(0,0,0,.7)}
+.burst-line b{color:var(--gold);font-weight:600}
 #burst.fire .burst-line{animation:preIn 1.1s var(--ease) 1s forwards}
 .burst-lat{position:relative;z-index:2;margin-top:.5rem;font-family:var(--f-lat);
   font-size:clamp(.85rem,2.6vw,1.3rem);letter-spacing:.5em;padding-inline-start:.5em;
@@ -439,6 +454,7 @@ html[dir="ltr"] .eyebrow{flex-direction:row}
 <div id="intro">
   <div id="stars"></div>
   <div id="intro-map"></div>
+  <div id="intro-veil"></div>
 
   <!-- launch gate -->
   <div id="gate">
@@ -460,6 +476,7 @@ html[dir="ltr"] .eyebrow{flex-direction:row}
 
   <!-- elegant explosion reveal -->
   <div id="burst">
+    <div class="burst-bg"></div>
     <div class="flash"></div>
     <div class="ring r1"></div><div class="ring r2"></div><div class="ring r3"></div>
     <div class="burst-mark">دورڤا<span class="dot">.</span></div>
@@ -770,7 +787,7 @@ document.getElementById('yr').textContent = new Date().getFullYear();
 
     // fallback if maps unavailable
     if(typeof maplibregl==='undefined'){
-      setTimeout(()=>{ mapEl.classList.add('show'); }, 200);
+      setTimeout(()=>{ mapEl.classList.add('show'); document.getElementById('intro-veil').classList.add('show'); }, 200);
       setTimeout(fireBurst, 1200);
       return;
     }
@@ -793,6 +810,7 @@ document.getElementById('yr').textContent = new Date().getFullYear();
     map.on('load',()=>{
       try{ map.setProjection({type:'globe'}); }catch(e){}
       mapEl.classList.add('show');
+      document.getElementById('intro-veil').classList.add('show');
       showCap(1);
 
       setTimeout(()=>{ showCap(2);
